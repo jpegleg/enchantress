@@ -23,6 +23,21 @@ The AES-256 uses that final key material and a nonce that has time data and rand
 
 ## Installing
 
+Enchantress can be installed from crates.io:
+
+```
+cargo install enchantress
+```
+
+Or compiled from source:
+
+```
+cargo build --release
+sudo cp target/release/enchantress /usr/local/bin/
+```
+
+Or installed from a release binary.
+
 
 ## Command options
 
