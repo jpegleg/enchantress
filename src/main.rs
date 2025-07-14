@@ -165,6 +165,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             decrypt_stdout(input_file, &key)?;
             key.zeroize();
         },
+        "-do" => {
+            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
+            let mut contents = String::new();
+            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {}", e)))?;
+            let config: Config = toml::from_str(&contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml: {}", e)))?;
+            let mut file = File::open(input_file)?;
+            let mut nonce = [0u8; 16];
+            file.read_exact(&mut nonce)?;
+            print!("Enter password: ");
+            std::io::stdout().flush()?;
+            let password = read_password()?;
+            let bpassword = password.as_bytes();
+            let mut key = a2(bpassword, &MAGIC);
+            let in_file = File::open(input_file);
+            let mut input_file_data = Vec::new();
+            in_file?.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            let validate = ciphertext_hash(&key, &input_file_data, 64);
+            let validate_str = BASE64_STANDARD.encode(&validate);
+            let checkme = &validate_str;
+            checks(checkme, &config.ciphertext_hash, input_file, &config.ciphertext_path);
+            decrypt_stdout(input_file, &key)?;
+            key.zeroize();
+        },
         "-de" => {
             let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
             let mut contents = String::new();
