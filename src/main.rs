@@ -26,7 +26,6 @@ const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 /// The Config struct is required, parsed from enchantress.toml.
 #[derive(Deserialize)]
 struct Config {
-    ciphertext_path: String,
     ciphertext_hash: String,
 }
 
@@ -40,17 +39,22 @@ creation_time = "{}"
 "#,
         ciphertext_path, ciphertext_hash, readi
         );
-    let mut file = File::create("./enchantress.toml")?;
+    let mut file = File::create("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
     file.write_all(config_content.as_bytes())?;
     Ok(())
 }
 
 /// Ensure that the ciphertext hasn't been tampered with and that the key material is correct.
-fn checks(validate: &str, ciphertext_hash: &str, ciphertext: &str, ciphertext_path: &str) {
-   assert_eq!(validate, ciphertext_hash);
-   assert_eq!(ciphertext, ciphertext_path);
+fn checks(validate: &str, ciphertext_hash: &str) -> bool {
+    let result = validate == ciphertext_hash;
+    if result == true {
+      return true
+    } else {
+      println!("Ciphertext and/or password are not as expected. \
+        The supplied password was wrong or the file was tampered with.");
+      return false
+    };
 }
-
 
 /// Generate key material based on the password, nonce, and then
 /// hash the hash by mixing two fixed values.
@@ -155,14 +159,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let strpassword = env::var("ENC").expect("ENC env var not set");
             let password = strpassword.as_bytes();
             let mut key = a2(password, &MAGIC);
-            let in_file = File::open(input_file);
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
-            in_file?.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            checks(checkme, &config.ciphertext_hash, input_file, &config.ciphertext_path);
-            decrypt_stdout(input_file, &key)?;
+            if checks(checkme, &config.ciphertext_hash) == true {
+              decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+            } else {
+              println!("Refusing to decrypt.");
+            };
             key.zeroize();
         },
         "-do" => {
@@ -178,14 +185,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = a2(bpassword, &MAGIC);
-            let in_file = File::open(input_file);
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
-            in_file?.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            checks(checkme, &config.ciphertext_hash, input_file, &config.ciphertext_path);
-            decrypt_stdout(input_file, &key)?;
+            if checks(checkme, &config.ciphertext_hash) == true {
+              decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+            } else {
+              println!("Refusing to decrypt.");
+            };
             key.zeroize();
         },
         "-de" => {
@@ -199,14 +209,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let strpassword = env::var("ENC").expect("ENC env var not set");
             let password = strpassword.as_bytes();
             let mut key = a2(password, &MAGIC);
-            let in_file = File::open(input_file);
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
-            in_file?.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            checks(checkme, &config.ciphertext_hash, input_file, &config.ciphertext_path);
-            decrypt_file(input_file, output_file, &key)?;
+            if checks(checkme, &config.ciphertext_hash) == true {
+              decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+            } else {
+              println!("Refusing to decrypt.");
+            };
             key.zeroize();
         },
         "-d" => {
@@ -222,14 +235,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = a2(bpassword, &MAGIC);
-            let in_file = File::open(input_file);
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
-            in_file?.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            checks(checkme, &config.ciphertext_hash, input_file, &config.ciphertext_path);
-            decrypt_file(input_file, output_file, &key)?;
+            if checks(checkme, &config.ciphertext_hash) == true {
+              decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+            } else {
+              println!("Refusing to decrypt.");
+            };
             key.zeroize();
         },
         "-ee" => {
@@ -237,9 +253,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let bpassword = password.as_bytes();
             let mut key = a2(bpassword, &MAGIC);
             encrypt_file(input_file, output_file, &key)?;
-            let out_file = File::open(output_file);
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)))?;
             let mut output_file_data = Vec::new();
-            out_file?.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("Validation string is: {validate_str}");
@@ -253,9 +269,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let bpassword = password.as_bytes();
             let mut key = a2(bpassword, &MAGIC);
             encrypt_file(input_file, output_file, &key)?;
-            let out_file = File::open(output_file);
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)))?;
             let mut output_file_data = Vec::new();
-            out_file?.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("Validation string is: {validate_str}");
