@@ -41,7 +41,7 @@ Or installed from a release binary.
 
 ## Command options
 
-There are two different modes and two types of decryption. 
+There are two different modes and two types of decryption.
 
 ```
 The first mode is with a supplied password interactively supplied in the terminal: -e and -d
@@ -50,25 +50,24 @@ The two types of decryption are:
   decryption to a file: -d and -de
   decryption to STDOUT: -do and -deo
 ```
-  
+
 ## Ciphertext integrity
 
 AES-256 CTR mode does not provide non-malleability, so SHA3 and a serialized config file with hash comparison logic are used to provide an additional layer of non-malleability.
-This ensure that ciphertext files are not tampered with. If the ciphertext or password are not correct, enchantress will panic like so:
+This helps ensure that ciphertext files are not tampered with. If the ciphertext or password are not correct, enchantress will print a message like so and exit:
 
 ```
-thread 'main' panicked at src/main.rs:50:4:
-assertion `left == right` failed
-  left: "w3E3Lx5gZZjJpzV7GAzNqx5g5y5QHDiojhaThRGrUASif+lX2o1SmNhvCbGdmaGW8sYLxmTQ4MQnaYx/XBMubA=="
- right: "xshPOXhtqGJtBoIj/vvxWSh55hryEOMYRqOeedH0hJJccH/edQSUqXxkGvvaFNeJfL9NOaAVUdav4z1tAkn+/A=="
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Ciphertext and/or password are not as expected. The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.
+Found hash: wcUIBjCNaWdH6ljwqSgiHSMqRzCBM6yEFvGeiqqzkYsgLUbJcNyEbdMuZNqfFlDxMbxD1nqfcrmWBvRdxuzAGw==
+Expected hash: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+Refusing to decrypt.
 ```
 
 This integrity check is a comparison of base64 encoded SHA3 64 byte XOFs. The hashes are constructed from the ciphertext and the key material being processed together, output as a 64 byte SHA3 XOF.
 
 ## The enchantress.toml file
 
-With each encryption, an `enchantress.toml` file is created in the pwd of the command execution. 
+With each encryption, an `enchantress.toml` file is created in the pwd of the command execution.
 
 <b>WARNING: This file will be overwritten if one is already present and an encryption is run in the same directory!</b>
 
@@ -84,3 +83,69 @@ creation_time = "2025-07-13 19:15:32.334352329 UTC"
 The `ciphertext_hash` is not a secret itself and can be safely shared.
 
 The password used is the secret to protect. The password is not stored and explicitly emptied from memory.
+
+Weak passwords are weak security. Enchantress does not enforce "good" passwords, password security is up to you!
+
+## Usage patterns
+
+Becaue there can only be one `enchantress.toml` in the working directory, when working with multiple files we might either change directories or move the enchantress.toml files that are created to other names.
+
+Here is an example of creating directories and then moving into them to encrypt each file.
+In this example we also validate that the decryption is working before removing the plaintext.
+
+```
+mkdir data_1 data_2
+cd data_1
+enchantress /someplace/myfile /someplace/myfile.e -e
+Enter password:
+Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+enchantress /someplace/myfile.e . -do
+Enter password:
+test data
+rm -f /someplace/myfile
+cd ..
+cd data_2
+encahntress /someplace/anotherfile /someplace/anotherfile.e -e
+Enter password:
+Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
+enchantress /someplace/anotherfile.e . -do
+Enter password:
+some other data
+rm -f /someplace/anotherfile
+cd ..
+```
+
+In this example we stay in the same directory, but move the enchantress.toml file to new file names after each encryption.
+
+```
+enchantress /someplace/myfile /someplace/myfile.e -e
+Enter password:
+Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+enchantress /someplace/myfile.e . -do
+Enter password:
+test data
+rm -f /someplace/myfile
+mv enchantress.toml myfile_enchantress.toml
+encahntress /someplace/anotherfile /someplace/anotherfile.e -e
+Enter password:
+Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
+enchantress /someplace/anotherfile.e . -do
+Enter password:
+some other data
+rm -f /someplace/anotherfile
+mv enchantress.toml anotherfile_enchantress.toml
+```
+
+When moving the enchantress.toml to new file names, we'll have to move them back to enchantress.toml to decrypt.
+
+Notice how in these examples we have "." as the output file when using the "-do" option. The value of the output file can be anything when the decryption is going to STDOUT
+because it is not written, so a period or any other single character is one way to do it.
+
+Another technique is to use the same file for both input and output. This is not generally recommended as you don't have a chance to validate the decryption and the file name isn't changed.
+But it is an option that can be used.
+
+```
+enchantress /someplace/myfile /someplace/myfile -e
+Enter password:
+Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+```
