@@ -18,7 +18,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 type Aes256Ctr = Ctr64BE<Aes256>;
 
-/// These two constants are fixed salts used in the second round
+/// These two constants are fixed salts used in the rounds
 /// of Argon2 hashing of the key material.
 const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
@@ -51,7 +51,9 @@ fn checks(validate: &str, ciphertext_hash: &str) -> bool {
       return true
     } else {
       println!("Ciphertext and/or password are not as expected. \
-        The supplied password was wrong or the file was tampered with.");
+        The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.");
+      println!("Found hash: {}", validate);
+      println!("Expected hash: {}", ciphertext_hash);
       return false
     };
 }
