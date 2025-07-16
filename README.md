@@ -105,7 +105,7 @@ test data
 rm -f /someplace/myfile
 cd ..
 cd data_2
-encahntress /someplace/anotherfile /someplace/anotherfile.e -e
+enchantress /someplace/anotherfile /someplace/anotherfile.e -e
 Enter password:
 Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
 enchantress /someplace/anotherfile.e . -do
@@ -126,7 +126,7 @@ Enter password:
 test data
 rm -f /someplace/myfile
 mv enchantress.toml myfile_enchantress.toml
-encahntress /someplace/anotherfile /someplace/anotherfile.e -e
+enchantress/someplace/anotherfile /someplace/anotherfile.e -e
 Enter password:
 Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
 enchantress /someplace/anotherfile.e . -do
