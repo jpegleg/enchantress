@@ -174,8 +174,11 @@ export ENC="RWw5XjBXQmhBLi43VGIwSCZfXl4xRm18T3RBNTZIOCQK and so it was my passwo
 enchantress /someplace/myfile.e /someplace/myfile -de
 ```
 
-If we want to clear out the environment variable (in BASH), we can 'unset' it
+If we want to clear out the environment variable (in BASH), we can 'unset' it:
 
 ```
 unset ENC
 ```
+
+Fun fact: emojis can be used in passwords in most cases and can create very strong passwords in some cases.
+
