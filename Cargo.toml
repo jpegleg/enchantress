@@ -9,7 +9,7 @@ homepage = "https://carefuldata.com"
 repository = "https://github.com/jpegleg/enchantress"
 readme = "README.md"
 categories = ["cryptography"]
-keywords = ["aes-256", "file-encryption", "cli", "ctr", "aes", "aes-ctr", "argon2", "sha3", "sha-3", "encryption", "password", "symmetric-cryptography", "argon2id", "privacy", "secrets-management", "secret", "key-management", "ciphertext", "decryption", "strong-encryption"]
+keywords = ["aes-256", "file-encryption", "cli", "encryption", "password"]
 
 [dependencies]
 rpassword = "7.2"
