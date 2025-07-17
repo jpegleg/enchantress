@@ -17,7 +17,7 @@ Argon2 round 1: supplied password + fixed1 ->
 
 ```
 
-This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty.
+This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty, assuming you have at least 19MB of RAM.
 
 The AES-256 uses that final key material and a nonce that has time data and random data from the system.
 
@@ -82,6 +82,10 @@ creation_time = "2025-07-13 19:15:32.334352329 UTC"
 
 The `ciphertext_hash` is not a secret itself and can be safely shared.
 
+The only line actually required for decryption is the ciphertext_hash, the other lines are for human use.
+An enchantress.toml can be created/recreated manually. The "validation string" that the encryption outputs
+is ciphertext_hash, and can be stored separately or shared, etc etc.
+
 The password used is the secret to protect. The password is not stored and explicitly emptied from memory.
 
 Weak passwords are weak security. Enchantress does not enforce "good" passwords, password security is up to you!
@@ -126,7 +130,7 @@ Enter password:
 test data
 rm -f /someplace/myfile
 mv enchantress.toml myfile_enchantress.toml
-enchantress/someplace/anotherfile /someplace/anotherfile.e -e
+enchantress /someplace/anotherfile /someplace/anotherfile.e -e
 Enter password:
 Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
 enchantress /someplace/anotherfile.e . -do
@@ -149,3 +153,29 @@ enchantress /someplace/myfile /someplace/myfile -e
 Enter password:
 Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
 ```
+
+When we decrypt files, we can either print to STDOUT or decrypt to a file. If the data is binary, then printing to STDOUT is not very useful and likely you should decrypt to a file.
+If the data is text that needs to stay protected, they decrypting to STDOUT is useful as to not expose the plaintext to the disk and need to remove it again.
+
+There are also options for using the environment variable "ENC". This is generally less secure, but provides a way for automation to utilize enchantress.
+We can set a password as an environment variable so that systems that need to automatically encrypt can do so without an interactive prompt or exposed key file on the disk.
+
+```
+export ENC="RWw5XjBXQmhBLi43VGIwSCZfXl4xRm18T3RBNTZIOCQK and so it was my password blah"
+enchantress /someplace/myfile /someplace/myfile.e -ee
+Validation string is: mP3dNHQUpnL7420BWdJdKqY4plQBZDZft8A6wnTTV1dJaeWSz8AdSiwfu8uTilnogORHtOda/sHzkyV/2BAtyw==
+rm -f /someplace/myfile
+```
+
+Then to decrypt with the "ENC" environment variable:
+
+```
+export ENC="RWw5XjBXQmhBLi43VGIwSCZfXl4xRm18T3RBNTZIOCQK and so it was my password blah"
+enchantress /someplace/myfile.e /someplace/myfile -de
+```
+
+If we want to clear out the environment variable (in BASH), we can 'unset' it
+
+```
+unset ENC
+``
