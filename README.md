@@ -21,6 +21,9 @@ This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty, 
 
 The AES-256 uses that final key material and a nonce that has time data and random data from the system.
 
+The output of enchantress is JSON except for when printing to STDOUT. Errors also print JSON.
+Password prompts use STDOUT as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
+
 ## Installing
 
 Enchantress can be installed from crates.io:
@@ -57,10 +60,12 @@ AES-256 CTR mode does not provide non-malleability, so SHA3 and a serialized con
 This helps ensure that ciphertext files are not tampered with. If the ciphertext or password are not correct, enchantress will print a message like so and exit:
 
 ```
-Ciphertext and/or password are not as expected. The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.
-Found hash: wcUIBjCNaWdH6ljwqSgiHSMqRzCBM6yEFvGeiqqzkYsgLUbJcNyEbdMuZNqfFlDxMbxD1nqfcrmWBvRdxuzAGw==
-Expected hash: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
-Refusing to decrypt.
+{
+  "ERROR": "Ciphertext and/or password are not as expected. The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.",
+  "Found hash": "zHuCjbtVtgUj/osukIU7Lfa/MuJXvOWsTwbyRdIb2sM7AvM7dE3JBlm4J+qIvjP6xnlarb/cgKgslbfsqPOGLw==",
+  "Expected hash": "mX7aiGz8k2w7AXItnwNttL03xHed/dm1wZX/hi22DZcEqbpeBhMgeAKuxuJgOF1TJDFd3FoqlrNrLqcLCW0YWg==",
+  "Result": "Refusing to decrypt."
+}
 ```
 
 This integrity check is a comparison of base64 encoded SHA3 64 byte XOFs. The hashes are constructed from the ciphertext and the key material being processed together, output as a 64 byte SHA3 XOF.
@@ -102,7 +107,7 @@ mkdir data_1 data_2
 cd data_1
 enchantress /someplace/myfile /someplace/myfile.e -e
 Enter password:
-Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+{"Validation string": "mX7aiGz8k2w7AXItnwNttL03xHed/dm1wZX/hi22DZcEqbpeBhMgeAKuxuJgOF1TJDFd3FoqlrNrLqcLCW0YWg=="}
 enchantress /someplace/myfile.e . -do
 Enter password:
 test data
@@ -111,7 +116,7 @@ cd ..
 cd data_2
 enchantress /someplace/anotherfile /someplace/anotherfile.e -e
 Enter password:
-Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
+{"Validation string": "7xzFsmth88L9YZwpHqUMBbNdx9IVHtAneshyDSqXi6IcT6SL9r8SxE6DjKg/bpzQargpfmo1/fzeKSA6Ve5QDg=="}
 enchantress /someplace/anotherfile.e . -do
 Enter password:
 some other data
@@ -124,7 +129,7 @@ In this example we stay in the same directory, but move the enchantress.toml fil
 ```
 enchantress /someplace/myfile /someplace/myfile.e -e
 Enter password:
-Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+{"Validation string": "fDtQiBLuMFZeebE7WmOkgHXbxHAbgbTUEEsx2fH2p8ZkR0LVTluzzwuYKVjobLLHyNUB50cMF57ftQPNcRyyYg=="}
 enchantress /someplace/myfile.e . -do
 Enter password:
 test data
@@ -132,7 +137,7 @@ rm -f /someplace/myfile
 mv enchantress.toml myfile_enchantress.toml
 enchantress /someplace/anotherfile /someplace/anotherfile.e -e
 Enter password:
-Validation string is: OxEJKQfc3ilJGD0DOZ/nLzsHOBOPZf8SIqnd1/G+EfIiBVdFtZJs0DrURohf9HX++waeqs4qrnSKB1w/rm+3+g==
+{"Validation string": "BS40KBN66tTCs7GDBIThqT2UyJBR+bJhekUbkl8PfIvfrusk+0FkRohrAGcatBjwYM4GIyBOVvDY4FiKePjMfw=="}
 enchantress /someplace/anotherfile.e . -do
 Enter password:
 some other data
@@ -163,7 +168,7 @@ We can set a password as an environment variable so that systems that need to au
 ```
 export ENC="RWw5XjBXQmhBLi43VGIwSCZfXl4xRm18T3RBNTZIOCQK and so it was my password blah"
 enchantress /someplace/myfile /someplace/myfile.e -ee
-Validation string is: mP3dNHQUpnL7420BWdJdKqY4plQBZDZft8A6wnTTV1dJaeWSz8AdSiwfu8uTilnogORHtOda/sHzkyV/2BAtyw==
+{"Validation string": "/eOzNTiB/htZxl8DhdYzWkyw/WuDMERU6To09r85X72JWDalObKrBI88UkhSzBy1o1RT2h+lpurf7vtxn0MaSw=="}
 rm -f /someplace/myfile
 ```
 
@@ -172,6 +177,7 @@ Then to decrypt with the "ENC" environment variable:
 ```
 export ENC="RWw5XjBXQmhBLi43VGIwSCZfXl4xRm18T3RBNTZIOCQK and so it was my password blah"
 enchantress /someplace/myfile.e /someplace/myfile -de
+{"Result": "file decrypted"}
 ```
 
 If we want to clear out the environment variable (in BASH), we can 'unset' it:
