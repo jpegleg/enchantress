@@ -86,7 +86,7 @@ fn generate_nonce() -> [u8; 16] {
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     let timestamp_nanos = now.as_nanos();
     nonce[0..8].copy_from_slice(&timestamp_nanos.to_le_bytes()[0..8]);
-    OsRng.try_fill_bytes(&mut nonce[8..16]);
+    let _ = OsRng.try_fill_bytes(&mut nonce[8..16]);
     nonce
 }
 
