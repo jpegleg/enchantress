@@ -12,6 +12,7 @@ use chrono::prelude::*;
 use zeroize::Zeroize;
 
 use std::env;
+use std::error::Error as StdError;
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::process;
@@ -24,6 +25,36 @@ type Aes256Ctr = Ctr64BE<Aes256>;
 const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 
+
+/// Forces errors to JSON. This function is a wrapper for STDERR to JSON.
+fn print_error_json(msg: &str) {
+    // This is a simple wrapper for STDERR JSON error printing.
+    eprintln!(r#"{{ "Error": "{}" }}"#, msg);
+}
+
+/// This macro rule is used to catch errors and force them to JSON.
+/// The json_started variable is manually set when the printing of
+/// a JSON body has already begun, so we can complete the printing
+/// of a valid JSON body, catching mid-processing issues and ensuring
+/// the output is always valid JSON.
+macro_rules! try_print_json {
+    ($expr:expr, $json_started:expr) => {
+        match $expr {
+            Ok(val) => val,
+            Err(e) => {
+                if $json_started {
+                    println!("  \"Error\": \"{}\"", e);
+                    println!(" }}");
+                    println!("}}");
+                    return Ok(());
+                } else {
+                    return Err(Box::new(e) as Box<dyn StdError>);
+                }
+            }
+        }
+    };
+}
+
 /// The Config struct is required, parsed from enchantress.toml.
 #[derive(Deserialize)]
 struct Config {
@@ -31,7 +62,7 @@ struct Config {
 }
 
 /// Write a config file each time we encrypt to enchantress.toml.
-fn write_config(ciphertext_path: &str, ciphertext_hash: &str) -> io::Result<()> {
+fn write_config(ciphertext_path: &str, ciphertext_hash: &str) -> Result<(), Box<dyn StdError>> {
     let readi: DateTime<Utc> = Utc::now();
     let config_content = format!(
         r#"ciphertext_path = "{}"
@@ -40,8 +71,15 @@ creation_time = "{}"
 "#,
         ciphertext_path, ciphertext_hash, readi
         );
-    let mut file = File::create("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
-    file.write_all(config_content.as_bytes())?;
+    let json_started = false;
+    let mut file = try_print_json!(
+        File::create("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e))),
+        json_started
+    );
+    let _ = try_print_json!(
+        file.write_all(config_content.as_bytes()),
+        json_started
+    );
     Ok(())
 }
 
@@ -51,10 +89,10 @@ fn checks(validate: &str, ciphertext_hash: &str) -> bool {
     if result == true {
       return true
     } else {
-      println!("Ciphertext and/or password are not as expected. \
-        The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.");
-      println!("Found hash: {}", validate);
-      println!("Expected hash: {}", ciphertext_hash);
+      println!("{{\n  \"ERROR\": \"Ciphertext and/or password are not as expected. \
+        The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.\",");
+      println!("  \"Found hash\": \"{}\",", validate);
+      println!("  \"Expected hash\": \"{}\",", ciphertext_hash);
       return false
     };
 }
@@ -139,10 +177,10 @@ fn decrypt_stdout(input_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     if args.len() != 4 {
-        eprintln!("Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>", args[0]);
+        eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
         process::exit(1);
     }
 
@@ -171,7 +209,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             if checks(checkme, &config.ciphertext_hash) == true {
               decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
             } else {
-              println!("Refusing to decrypt.");
+              println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
         },
@@ -183,7 +221,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            print!("Enter password: ");
+            eprint!("Enter password: ");
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
@@ -197,7 +235,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             if checks(checkme, &config.ciphertext_hash) == true {
               decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
             } else {
-              println!("Refusing to decrypt.");
+              println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
         },
@@ -220,8 +258,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let checkme = &validate_str;
             if checks(checkme, &config.ciphertext_hash) == true {
               decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+              println!("{{\"Result\": \"file decrypted\"}}");
             } else {
-              println!("Refusing to decrypt.");
+              println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
         },
@@ -233,7 +272,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            print!("Enter password: ");
+            // Hide from STDOUT for output management, use STDERR for password prompt.
+            eprint!("Enter password: ");
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
@@ -246,8 +286,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let checkme = &validate_str;
             if checks(checkme, &config.ciphertext_hash) == true {
               decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)))?;
+              println!("{{\"Result\": \"file decrypted\"}}");
             } else {
-              println!("Refusing to decrypt.");
+              println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
         },
@@ -261,12 +302,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
-            println!("Validation string is: {validate_str}");
+            println!("{{\"Validation string\": \"{validate_str}\"}}");
             let _ = write_config(output_file, &validate_str);
             key.zeroize();
         },
         "-e" => {
-            print!("Enter password: ");
+            // Hide from STDOUT for output management, use STDERR for password prompt.
+            eprint!("Enter password: ");
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
@@ -277,16 +319,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
             let validate = ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
-            println!("Validation string is: {validate_str}");
+            println!("{{\"Validation string\": \"{validate_str}\"}}");
             let _ = write_config(output_file, &validate_str);
             key.zeroize();
         },
 
         _ => {
-            eprintln!("Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. ");
+            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT.\"}} ");
             process::exit(1);
         }
     }
 
     Ok(())
+}
+
+/// The main function is a wrapper for the run function, for error catching.
+fn main() {
+    if let Err(e) = run() {
+        print_error_json(&e.to_string());
+        std::process::exit(1);
+    }
 }
