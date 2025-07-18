@@ -156,7 +156,7 @@ But it is an option that can be used.
 ```
 enchantress /someplace/myfile /someplace/myfile -e
 Enter password:
-Validation string is: zRLHXuhOh5UMIRN4wbXks9u43DZ8HdQXjiCOznrK2yaPsMjzFnSvJWMSIh/w1Vv5g05J5lC7XHi4t2glzEKW3g==
+{"Validation string": "/eOzNTiB/htZxl8DhdYzWkyw/WuDMERU6To09r85X72JWDalObKrBI88UkhSzBy1o1RT2h+lpurf7vtxn0MaSw=="}
 ```
 
 When we decrypt files, we can either print to STDOUT or decrypt to a file. If the data is binary, then printing to STDOUT is not very useful and likely you should decrypt to a file.
