@@ -21,7 +21,7 @@ This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty, 
 
 The AES-256 uses that final key material and a nonce that has time data and random data from the system.
 
-As of v0.1.3: The output of enchantress is JSON, except for when printing to STDOUT. Errors also print JSON.
+As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
 
 ## Installing
