@@ -54,6 +54,15 @@ The two types of decryption are:
   decryption to STDOUT: -do and -deo
 ```
 
+## Project promises
+
+This project will never use AI-slop. All code is reviewed, tested, implemented by a human that is academically trained in cryptography and information security.
+This repository and the crates.io repository is carefully managed and protected.
+
+This project will never break backwards compatibility with decryption.
+
+This project will be maintained as best as is reasonable.
+
 ## Ciphertext integrity
 
 AES-256 CTR mode does not provide non-malleability, so SHA3 and a serialized config file with hash comparison logic are used to provide an additional layer of non-malleability.
