@@ -24,6 +24,8 @@ The AES-256 uses that final key material and a nonce that has time data and rand
 As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
 
+As of v0.1.4: Enchantress functions are also available as a library and can be imported into your project from crates.io.
+
 ## Installing
 
 Enchantress can be installed from crates.io:
