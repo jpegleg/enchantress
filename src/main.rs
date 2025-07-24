@@ -72,12 +72,15 @@ creation_time = "{}"
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
+    let input_file = &args[1];
+    if input_file == "-v" {
+        println!("{{\"Version\": \"0.1.4\"}}");
+        process::exit(0);
+    }
     if args.len() != 4 {
         eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
         process::exit(1);
     }
-
-    let input_file = &args[1];
     let output_file = &args[2];
     let flag = &args[3];
 
@@ -216,9 +219,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let _ = write_config(output_file, &validate_str);
             key.zeroize();
         },
-
         _ => {
-            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT.\"}} ");
+            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. Use -v to print the version of enchantress.\"}} ");
             process::exit(1);
         }
     }
