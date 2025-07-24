@@ -66,7 +66,7 @@ mod tests {
       let input = b"test-case12341234";
       let mut key = crypt_aes::a2(input, &MAGIC);
       let input_file = "./Cargo.toml";
-      let output_file = "/tmp/test.e";
+      let output_file = "./test.e";
       let _ = crypt_aes::encrypt_file(input_file, output_file, &key);
       let out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)));
       let mut output_file_data = Vec::new();
@@ -87,7 +87,6 @@ mod tests {
     #[test]
     fn crypttest2() {
       use base64::prelude::*;
-
       use std::fs::File;
       use std::io::{self, Read};
       use crate::crypt_aes::MAGIC;
@@ -96,17 +95,17 @@ mod tests {
       let input = b"test-case12341234";
       let key = crypt_aes::a2(input, &MAGIC);
       let input_file = "./Cargo.toml";
-      let output_file = "/tmp/test.e";
+      let output_file = "./test.e";
       let _ = crypt_aes::encrypt_file(input_file, output_file, &key);
-      let out_file = File::open("/tmp/test.e").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)));
+      let out_file = File::open("./test.e").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)));
       let mut output_file_data = Vec::new();
       let _ = out_file.expect("failed to read test file").read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)));
       let _ = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
       let mut nonce = [0u8; 16];
 
-      let _ = File::create("/tmp/test.o");
-      let ciphertext_file = File::open("/tmp/test.e");
-      let validate_file = File::open("/tmp/test.o");
+      let _ = File::create("./test.o");
+      let ciphertext_file = File::open("./test.e");
+      let validate_file = File::open("./test.o");
       let mut input_file_data = Vec::new();
       let _ = ciphertext_file.as_ref().expect("failed to read file").read_exact(&mut nonce);
       let _ = ciphertext_file.expect("failed to read file").read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)));
@@ -114,7 +113,7 @@ mod tests {
       let validate_str = BASE64_STANDARD.encode(&validate);
       let checkme = &validate_str;
       if crypt_aes::checks(checkme, &validate_str) == true {
-        let _ = crypt_aes::decrypt_file("/tmp/test.e", "/tmp/test.o", &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)));
+        let _ = crypt_aes::decrypt_file("./test.e", "./test.o", &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {}", e)));
         println!("{{\"Result\": \"file decrypted\"}}");
       } else {
         println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
