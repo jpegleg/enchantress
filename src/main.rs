@@ -95,7 +95,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             file.read_exact(&mut nonce)?;
             let strpassword = env::var("ENC").expect("ENC env var not set");
             let password = strpassword.as_bytes();
-            let mut key = crypt_aes::a2(password, &MAGIC);
+            let mut key = crypt_aes::a2(password, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
             in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
@@ -121,7 +121,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
-            let mut key = crypt_aes::a2(bpassword, &MAGIC);
+            let mut key = crypt_aes::a2(bpassword, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
             in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
@@ -145,7 +145,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             file.read_exact(&mut nonce)?;
             let strpassword = env::var("ENC").expect("ENC env var not set");
             let password = strpassword.as_bytes();
-            let mut key = crypt_aes::a2(password, &MAGIC);
+            let mut key = crypt_aes::a2(password, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
             in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
@@ -173,7 +173,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
-            let mut key = crypt_aes::a2(bpassword, &MAGIC);
+            let mut key = crypt_aes::a2(bpassword, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file: {}", e)))?;
             let mut input_file_data = Vec::new();
             in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {}", e)))?;
@@ -191,7 +191,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "-ee" => {
             let password = env::var("ENC").expect("ENC env var not set");
             let bpassword = password.as_bytes();
-            let mut key = crypt_aes::a2(bpassword, &MAGIC);
+            let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
             let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)))?;
             let mut output_file_data = Vec::new();
@@ -208,7 +208,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             std::io::stdout().flush()?;
             let password = read_password()?;
             let bpassword = password.as_bytes();
-            let mut key = crypt_aes::a2(bpassword, &MAGIC);
+            let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
             let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file: {}", e)))?;
             let mut output_file_data = Vec::new();
