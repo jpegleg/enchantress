@@ -12,7 +12,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 type Aes256Ctr = Ctr64BE<Aes256>;
 
-/// There are two arbitrary consants of sufficient length (46 bytes).
+/// There are two arbitrary consants of sufficient length (46 bytes) used as fixed salts.
 /// One of them is a "public const" named "MAGIC", while the other is
 /// a private constant used within this module named "ENCHA".
 #[allow(unused)]
