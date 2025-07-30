@@ -1,5 +1,7 @@
 mod crypt_aes;
 
+pub use crypt_aes::*;
+
 #[cfg(test)]
 mod tests {
     #[test]
