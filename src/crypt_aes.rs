@@ -12,14 +12,16 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 type Aes256Ctr = Ctr64BE<Aes256>;
 
-/// These two constants are fixed salts used in the rounds
-/// of Argon2 hashing of the key material.
+/// There are two arbitrary consants of sufficient length (46 bytes).
+/// One of them is a "public const" named "MAGIC", while the other is
+/// a private constant used within this module named "ENCHA".
 #[allow(unused)]
 pub const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
 #[allow(unused)]
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 
-/// Ensure that the ciphertext hasn't been tampered with and that the key material is correct.
+/// This "checks" function is a string comparison function to ensure that the ciphertext hasn't been 
+/// tampered with and that the key material is correct.
 #[allow(unused)]
 pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
     let result = validate == ciphertext_hash;
@@ -34,8 +36,9 @@ pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
     };
 }
 
-/// Generate key material based on the password, nonce, and then
-/// hash the hash by mixing two fixed values.
+/// Generate key material with two rounds of Argon2id. 
+/// The first round is based on the password and supplied salt.
+/// The second round is the output of the first round and the "ENCHA" salt.
 #[allow(unused)]
 pub fn a2(password: &[u8], salt: &[u8]) -> [u8; 32] {
     let mut okm = [0u8; 32];
@@ -45,7 +48,10 @@ pub fn a2(password: &[u8], salt: &[u8]) -> [u8; 32] {
     rkm
 }
 
-/// Use a SHA3 XOF to hash the ciphertext for integrity checking.
+/// This function generates a SHA3 XOF with SHAKE 256.
+/// The XOF (hash) has input of the password and the ciphertext so
+/// that if either the password is incorrect or the ciphertext has been
+/// modified, the value will change.
 #[allow(unused)]
 pub fn ciphertext_hash(password: &[u8], file_data: &[u8], length: usize) -> Vec<u8> {
     let mut hasher = Shake256::default();
@@ -57,7 +63,7 @@ pub fn ciphertext_hash(password: &[u8], file_data: &[u8], length: usize) -> Vec<
     key
 }
 
-/// Generate a timestamp + random nonce.
+/// Generate a 16 byte nonces for AES-256 with eight bytes of a nanosecond timestamp and 8 bytes of appended random nonce.
 #[allow(unused)]
 pub fn generate_nonce() -> [u8; 16] {
     let mut nonce = [0u8; 16];
@@ -68,7 +74,8 @@ pub fn generate_nonce() -> [u8; 16] {
     nonce
 }
 
-/// Encrypt a file with AES-256 in CTR mode.
+/// Encrypt a file with AES-256 in CTR mode. The function takes an input file, and output, and key to use for
+/// the encryption. A nonce is generated using the generate_nonce function.
 #[allow(unused)]
 pub fn encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
@@ -104,6 +111,8 @@ pub fn decrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(
 }
 
 /// Decrypt a file to STDOUT in AES-256 in CTR mode.
+/// The output is any UTF-8 data. If the data is non-UTF-8,
+/// decrypt to a file instead with the decrypt_file function.
 #[allow(unused)]
 pub fn decrypt_stdout(input_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
