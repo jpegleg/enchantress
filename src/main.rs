@@ -70,6 +70,7 @@ creation_time = "{}"
     Ok(())
 }
 
+/// The bulk of "main" is moved to "run" for error handling.
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let input_file = &args[1];
