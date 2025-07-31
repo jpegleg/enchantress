@@ -73,21 +73,23 @@ creation_time = "{}"
 /// The bulk of "main" is moved to "run" for error handling.
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    if args.len() > 0 {
-        eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
-        process::exit(1);
-    }
-    let input_file = &args[1];
-    if input_file == "-v" {
-        println!("{{\"Version\": \"0.1.4\"}}");
-        process::exit(0);
-    }
-    if args.len() != 4 {
-        eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
-        process::exit(1);
-    }
-    let output_file = &args[2];
-    let flag = &args[3];
+
+   if args.len() < 2 {
+       eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
+       process::exit(1);
+   }
+   let input_file = &args[1];
+   if input_file == "-v" {
+       println!("{{\"Version\": \"0.1.4\"}}");
+       process::exit(0);
+   }
+   if args.len() != 4 {
+       eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo>\"\n}}", args[0]);
+       process::exit(1);
+   }
+   let output_file = &args[2];
+   let flag = &args[3];
+
 
     match flag.as_str() {
         "-deo" => {
