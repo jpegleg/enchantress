@@ -6,6 +6,9 @@ Enchantress is a tool for AES-256 encryption in CTR mode.
 
 In addition to AES-256 CTR, there is also an integrity checking mechanism with SHA3.
 
+With the integrity check added, the behavior is much more like AES-GCM, except that instead of GMAC, we have SHA3 hash comparisons.
+This implementation is more simple than GMAC (GCM), yet provides a more flexible and easy to understand integrity and authentication system.
+
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption.
 
 The key is generated based on a password processed in Argon2:
@@ -19,7 +22,7 @@ Argon2 round 1: supplied password + fixed1 ->
 
 This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty, assuming you have at least 19MB of RAM.
 
-The AES-256 uses that final key material and a nonce that has time data and random data from the system.
+The AES-256 uses that final key material and an NONCE IV that has time data and random data from the system.
 
 As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
@@ -198,4 +201,90 @@ unset ENC
 ```
 
 Fun fact: emojis can be used in passwords in most cases and can create very strong passwords in some cases.
+
+
+## Using enchantress as a library
+
+While enchantress is a tool, the functions are also exposed as a library as of v0.1.4.
+
+We can add enchantress to another Rust project with:
+
+```
+cargo add enchantress
+```
+
+Or by adding the desired version to the Cargo.toml.
+
+Once imported, the features of enchantress can be recreated or utilzied within another program.
+
+Here is a simple demo example with no integrity checking, adding file encryption using enchantress functions for key material generation and AES-CTR:
+
+```
+use enchantress::*;
+
+fn main() {
+    println!("this is just a demo!");
+    let key = a2(b"hard coded password bad", MAGIC);
+    let _ = encrypt_file("Cargo.toml", "Cargo.toml.e", &key);
+}
+
+```
+
+The enchantress tool doesn't use hard-coded passwords but rather user provided interactive password or password from environment variable.
+
+This is what it would looke like to re-implement the same functionality as used in enchantress for interactive password based encryption:
+
+```
+
+            eprint!("Enter password: ");
+            std::io::stdout().flush()?;
+            let password = read_password()?;
+            let bpassword = password.as_bytes();
+            let mut key = a2(bpassword, MAGIC);
+            encrypt_file(input_file, output_file, &key)?;
+            let mut out_file = File::open(output_file)?;
+            let mut output_file_data = Vec::new();
+            out_file.read_to_end(&mut output_file_data)?;
+            let validate = ciphertext_hash(&key, &output_file_data, 64);
+            let validate_str = BASE64_STANDARD.encode(&validate);
+            println!("{{\"Validation string\": \"{validate_str}\"}}");
+            key.zeroize();
+```
+
+The main difference from that example and the actual code in enchantress, other than the error handling and import style, is that this example doesn't write out an `enchantress.toml`.
+
+This example shows the full combination of key material generation, encryption, and validation string generation.
+
+Then when we go to decrypt, enchantress handles it like this. Agaain, the error handling and module naming is different than code used in the enchantress tool.
+The error handling and JSON format is removed in this example to improve clarity. Check out the source code for enchantress to see more on that subject.
+
+```
+            eprint!("Enter password: ");
+            std::io::stdout().flush()?;
+            let password = read_password()?;
+            let bpassword = password.as_bytes();
+            let mut key = a2(bpassword, MAGIC);
+            let mut in_file = File::open(input_file)?;
+            let mut input_file_data = Vec::new();
+            in_file.read_to_end(&mut input_file_data)?;
+            let validate = ciphertext_hash(&key, &input_file_data, 64);
+            let validate_str = BASE64_STANDARD.encode(&validate);
+            let checkme = &validate_str;
+            if checks(checkme, &config.ciphertext_hash) == true {
+              decrypt_file(input_file, output_file, &key)?;
+              println!("file decrypted");
+            } else {
+              println!("refusing to decrypt");
+            };
+            key.zeroize();
+```
+
+In both of these examples we use `eprint!` macro to print to STDERR for the password prompts. This is useful for when the tool STDOUT is used to write to another file or log so that
+the password prompt isn't added to the output file/s.
+
+The enchantress tool reads the `enchantress.toml` to find the ciphertext_hash (the string created from the encryption, the "Validation string" from the example). That value could be
+set another way, but the implementation should be carefully enforced if the integrity checking matters. Of course other layers like HMAC and GMAC (GCM) can be implemented in addition or instead.
+
+Enchantress uses [zeroize](https://docs.rs/zeroize/latest/zeroize/) to explicitly empty the key from memory. This technique is generally recommended to avoid the edge case where the compiler optimizes away the 
+
 
