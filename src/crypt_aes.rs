@@ -21,7 +21,8 @@ pub const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 
 /// This "checks" function is a string comparison function to ensure that the ciphertext hasn't been 
-/// tampered with and that the key material is correct.
+/// tampered with and that the key material is correct. Supply the function with two hashes 
+/// generated from the ciphertext_hash function.
 #[allow(unused)]
 pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
     let result = validate == ciphertext_hash;
@@ -75,7 +76,8 @@ pub fn generate_nonce() -> [u8; 16] {
 }
 
 /// Encrypt a file with AES-256 in CTR mode. The function takes an input file, and output, and key to use for
-/// the encryption. A nonce is generated using the generate_nonce function.
+/// the encryption. A nonce is generated using the generate_nonce function. With the nonce generation
+/// built in, this function ensures that a nonce is not used twice.
 #[allow(unused)]
 pub fn encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
@@ -92,7 +94,7 @@ pub fn encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(
     Ok(())
 }
 
-/// Decrypt a file with AES-256 in CTR mode.
+/// Decrypt a file with AES-256 in CTR mode. The nonce is read from the first 16 bytes of the file.
 #[allow(unused)]
 pub fn decrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
