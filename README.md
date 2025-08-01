@@ -285,6 +285,6 @@ the password prompt isn't added to the output file/s.
 The enchantress tool reads the `enchantress.toml` to find the ciphertext_hash (the string created from the encryption, the "Validation string" from the example). That value could be
 set another way, but the implementation should be carefully enforced if the integrity checking matters. Of course other layers like HMAC and GMAC (GCM) can be implemented in addition or instead.
 
-Enchantress uses [zeroize](https://docs.rs/zeroize/latest/zeroize/) to explicitly empty the key from memory. This technique is generally recommended to avoid the edge case where the compiler optimizes away the 
+Enchantress uses [zeroize](https://docs.rs/zeroize/latest/zeroize/) to explicitly empty the key from memory. This technique is generally recommended to avoid the edge case where the compiler optimizes away an important aspect of "zeroizing" a value.
 
 
