@@ -64,7 +64,7 @@ pub fn ciphertext_hash(password: &[u8], file_data: &[u8], length: usize) -> Vec<
     key
 }
 
-/// Generate a 16 byte nonces for AES-256 with eight bytes of a nanosecond timestamp and 8 bytes of appended random nonce.
+/// Generate a 16 byte nonces for AES-256 with eight bytes of a nanosecond timestamp and 8 bytes of appended random bytes.
 #[allow(unused)]
 pub fn generate_nonce() -> [u8; 16] {
     let mut nonce = [0u8; 16];
