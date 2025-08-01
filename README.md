@@ -7,7 +7,8 @@ Enchantress is a tool for AES-256 encryption in CTR mode.
 In addition to AES-256 CTR, there is also an integrity checking mechanism with SHA3.
 
 With the integrity check added, the behavior is much more like AES-GCM, except that instead of GMAC, we have SHA3 hash comparisons.
-This implementation is more simple than GMAC (GCM), yet provides a more flexible and easy to understand integrity and authentication system.
+This implementation is more simple than GMAC (GCM), is faster and lighter weight, while providing a more flexible and easy to understand integrity and authentication system.
+The combination of SHA3 and AES-CTR makes enchantress a unique "detached" and "loose" AEAD.
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption.
 
@@ -20,9 +21,9 @@ Argon2 round 1: supplied password + fixed1 ->
 
 ```
 
-This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty, assuming you have at least 19MB of RAM.
+This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty in most situations. 
 
-The AES-256 uses that final key material and an NONCE IV that has time data and random data from the system.
+The AES-256 uses that final key material and a NONCE IV that has time data and random data from the system.
 
 As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
