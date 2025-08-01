@@ -88,6 +88,8 @@ This helps ensure that ciphertext files are not tampered with. If the ciphertext
 
 This integrity check is a comparison of base64 encoded SHA3 64 byte XOFs. The hashes are constructed from the ciphertext and the key material being processed together, output as a 64 byte SHA3 XOF.
 
+Even though GCM mode has it's own integrity mechanism within the ciphertext, enchantress still uses the additional integrity checking regardless of mode.
+
 ## The enchantress.toml file
 
 With each encryption, an `enchantress.toml` file is created in the pwd of the command execution.
