@@ -8,9 +8,9 @@ In addition to AES-256 CTR, there is also an integrity checking mechanism with S
 
 With the integrity check added, the behavior is much more like AES-GCM, except that instead of GMAC, we have SHA3 hash comparisons.
 This implementation is more simple than GMAC (GCM), is faster and lighter weight, while providing a more flexible and easy to understand integrity and authentication system.
-The combination of SHA3 and AES-CTR makes enchantress a unique "detached" and "loose" AEAD.
+The combination of SHA3 and AES-CTR makes enchantress similar to what might be described as a "detached" and "loose" AEAD; the difference between this style and an AEAD is that the integrity is not within the ciphertext itself, but a separate file. This means that the tooling enforces the integrity, not the algorithm used during encryption. The detached data is easier to independantly audit and manage usage, being in a serialized format that includes time and file name information.
 
-Encryptions are are recorded in an `enchantress.toml` which is needed for decryption.
+Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
 The key is generated based on a password processed in Argon2:
 
