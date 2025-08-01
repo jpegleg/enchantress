@@ -26,6 +26,8 @@ The AES-256 in CTR mode uses that final key material and a NONCE IV that has tim
 
 The AES-256 in GCM mode uses that final key material and a NONCE IV that is random data from the system.
 
+Especially for large files, "pure" CTR has advantages compared to GCM in system resource use and performance. If enchantress runs out of resources from the underlying system, the underlying OS will handle the killing of the process as usual.
+
 As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
 
