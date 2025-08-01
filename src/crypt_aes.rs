@@ -10,6 +10,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+/// Defining the type for AES CTR mode operations.
 type Aes256Ctr = Ctr64BE<Aes256>;
 
 /// There are two arbitrary consants of sufficient length (46 bytes) used as fixed salts.
@@ -17,6 +18,8 @@ type Aes256Ctr = Ctr64BE<Aes256>;
 /// a private constant used within this module named "ENCHA".
 #[allow(unused)]
 pub const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
+/// The ENCHA constant is a fixed salt (46 bytes) used within the crypt_aes module
+/// during the second round of Argon2id.
 #[allow(unused)]
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 
