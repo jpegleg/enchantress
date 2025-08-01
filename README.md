@@ -2,13 +2,12 @@
 
 # Enchantress
 
-Enchantress is a tool for AES-256 encryption in CTR mode.
+Enchantress is a tool for AES-256 encryption in CTR mode or GCM mode.
 
-In addition to AES-256 CTR, there is also an integrity checking mechanism with SHA3.
+Regardless of CTR or GCM mode, there is also an integrity checking mechanism with SHA3.
 
-With the integrity check added, the behavior is much more like AES-GCM, except that instead of GMAC, we have SHA3 hash comparisons.
-This implementation is more simple than GMAC (GCM), is faster and lighter weight, while providing a more flexible and easy to understand integrity and authentication system.
-The combination of SHA3 and AES-CTR makes enchantress similar to what might be described as a "detached" and "loose" AEAD; the difference between this style and an AEAD is that the integrity is not within the ciphertext itself, but a separate file. This means that the tooling enforces the integrity, not the algorithm used during encryption. The detached data is easier to independantly audit and manage usage, being in a serialized format that includes time and file name information.
+The integrity checking mechanism with SHA3 uses an XOF (expandable output function) with the ciphertext and password, to create a "validation_string", also referred to as the "ciphertext_hash",
+that the tool uses to ensure that the ciphertext has not been tampered with and that the password is correct.
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
@@ -23,12 +22,16 @@ Argon2 round 1: supplied password + fixed1 ->
 
 This is an "overkill" amount of Argon2, as 1 round of Argon2 is already plenty in most situations. 
 
-The AES-256 uses that final key material and a NONCE IV that has time data and random data from the system.
+The AES-256 in CTR mode uses that final key material and a NONCE IV that has time data and random data from the system.
+
+The AES-256 in GCM mode uses that final key material and a NONCE IV that is random data from the system.
 
 As of v0.1.3: The output of enchantress is JSON, except for when decrypting to STDOUT. Errors also print JSON.
 Password prompts use STDERR as to avoid messing with redirection, so we can still redirect and pipe the JSON when supplying a password interactively.
 
 As of v0.1.4: Enchantress functions are also available as a library and can be imported into your project from crates.io.
+
+As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the option. Example "-ge" is GCM, where "-e" is pure CTR. The GCM functions are available in the library as well.
 
 ## Installing
 
@@ -50,14 +53,14 @@ Or installed from a release binary.
 
 ## Command options
 
-There are two different modes and two types of decryption.
+There are two different cipher modes, two key input modes, and two types of decryption modes.
 
 ```
-The first mode is with a supplied password interactively supplied in the terminal: -e and -d
-The second mode is with a password set as the environment variable "ENC": -ee and -de
+The first mode is with a supplied password interactively supplied in the terminal: -e and -d (-ge and -gd for GCM)
+The second mode is with a password set as the environment variable "ENC": -ee and -de (-gee and -gde for GCM)
 The two types of decryption are:
-  decryption to a file: -d and -de
-  decryption to STDOUT: -do and -deo
+  decryption to a file: -d and -de (-gd and -gde for GCM)
+  decryption to STDOUT: -do and -deo (-gdo and -gdeo for GCM)
 ```
 
 ## Project promises
@@ -113,6 +116,10 @@ Weak passwords are weak security. Enchantress does not enforce "good" passwords,
 ## Usage patterns
 
 Becaue there can only be one `enchantress.toml` in the working directory, when working with multiple files we might either change directories or move the enchantress.toml files that are created to other names.
+
+GCM mode (options starting with -g) have increase security measures but requires more system resources and is slower than pure CTR mode. If encrypted with GCM mode, the decryptin needs to use the corresponding GCM mode decryption.
+
+We'll use "pure" CTR mode in the examples, but they all work the same way with GCM mode.
 
 Here is an example of creating directories and then moving into them to encrypt each file.
 In this example we also validate that the decryption is working before removing the plaintext.
@@ -207,6 +214,8 @@ Fun fact: emojis can be used in passwords in most cases and can create very stro
 ## Using enchantress as a library
 
 While enchantress is a tool, the functions are also exposed as a library as of v0.1.4.
+
+As of v0.1.6, GCM mode functions are in the library as well. These functions have the same name but with `aead_` in front, so `encrypt_file` is the CTR version and `aead_encrypt_file` is the GCM version.
 
 We can add enchantress to another Rust project with:
 
