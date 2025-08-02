@@ -1,8 +1,11 @@
 mod crypt_aes;
 mod crypt_aead;
+/// Expose the modules for use as a library.
 pub use crypt_aes::*;
 pub use crypt_aead::*;
 
+/// These unit tests validate a number of critical upstream behaviors, including
+/// encryption, decryption, date/time, and hashing capabilities.
 #[cfg(test)]
 mod tests {
     #[test]
