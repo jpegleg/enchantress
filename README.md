@@ -33,7 +33,9 @@ Password prompts use STDERR as to avoid messing with redirection, so we can stil
 
 As of v0.1.4: Enchantress functions are also available as a library and can be imported into your project from crates.io.
 
-As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the option. Example "-ge" is GCM, where "-e" is pure CTR. The GCM functions are available in the library as well.
+As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the option. Example "-ge" is GCM, where "-e" is pure CTR. The GCM functions are available in the library as well. Version 0.1.6 does not have checking during decryption of whether the ciphertext was CTR or GCM, so it can report successful decryption even when it was the wrong mode - this behavior is corrected in the 0.1.7 release with an additional optional config value.
+
+As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml which is checked during decryption to ensure that the decryption mode matches the encryption mode.
 
 ## Installing
 
@@ -105,6 +107,7 @@ Example:
 ciphertext_path = "my_data.e"
 ciphertext_hash = "xshPOXhtqGJtBoIj/vvxWSh55hryEOMYRqOeedH0hJJccH/edQSUqXxkGvvaFNeJfL9NOaAVUdav4z1tAkn+/A=="
 creation_time = "2025-07-13 19:15:32.334352329 UTC"
+mode = "CTR"
 ```
 
 The `ciphertext_hash` is not a secret itself and can be safely shared.
