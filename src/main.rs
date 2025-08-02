@@ -47,6 +47,7 @@ macro_rules! try_print_json {
 #[derive(Deserialize)]
 struct Config {
     ciphertext_hash: String,
+    mode: Option<String>,
 }
 
 /// Write a config file each time we encrypt to enchantress.toml.
@@ -76,29 +77,33 @@ mode = "{}"
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 2 {
-      eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo, -gd, -ge, -gee, -gde, -gdeo>\"\n}}", args[0]);
-      process::exit(1);
-    }
-    let input_file = &args[1];
-    if input_file == "-v" {
-      println!("{{\"Version\": \"0.1.7\"}}");
-      process::exit(0);
-    }
-    if args.len() != 4 {
-      eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo, -gd, -ge, -gee, -gde, -gdeo>\"\n}}", args[0]);
-      process::exit(1);
-    }
-    let output_file = &args[2];
-    let flag = &args[3];
+   if args.len() < 2 {
+       eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo, -gd, -ge, -gee, -gde, -gdeo>\"\n}}", args[0]);
+       process::exit(1);
+   }
+   let input_file = &args[1];
+   if input_file == "-v" {
+       println!("{{\"Version\": \"0.1.6\"}}");
+       process::exit(0);
+   }
+   if args.len() != 4 {
+       eprintln!("{{\n  \"ERROR\": \"Usage: {} <input_file> <output_file> < -d, -e, -ee, -do, -de, -deo, -gd, -ge, -gee, -gde, -gdeo>\"\n}}", args[0]);
+       process::exit(1);
+   }
+   let output_file = &args[2];
+   let flag = &args[3];
 
 
     match flag.as_str() {
         "-deo" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e)))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("GCM".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -gdeo instead because GCM was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
@@ -117,12 +122,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-do" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {}", e)))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {}", e)))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("GCM".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -gdo instead because GCM was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
@@ -143,12 +153,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-de" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("GCM".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -gde instead because GCM was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
@@ -168,12 +183,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-d" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("GCM".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"use -gd instead because GCM was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
@@ -196,6 +216,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-ee" => {
             let password = env::var("ENC").expect("ENC env var not set");
@@ -231,10 +252,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             key.zeroize();
         },
         "-gdeo" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("CTR".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -deo instead because CTR was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
@@ -253,12 +278,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-gdo" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("CTR".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -do instead because CTR was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
@@ -279,12 +309,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-gde" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("CTR".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -de instead because CTR was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
@@ -304,12 +339,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-gd" => {
-            let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
-            let mut contents = String::new();
-            file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-            let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut contents = String::new();
+          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+
+          if config.mode == Some("CTR".to_string()) {
+            eprintln!("{{\n  \"ERROR\": \"Use -d instead because CTR was found as mode in enchantress.toml\"\n}}");
+          } else {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
@@ -332,6 +372,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
             key.zeroize();
+          }
         },
         "-gee" => {
             let password = env::var("ENC").expect("ENC env var not set");
