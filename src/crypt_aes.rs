@@ -23,8 +23,8 @@ pub const MAGIC: &[u8] = b"789c33a8303536333437323334b328353301001ccc0395";
 #[allow(unused)]
 const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 
-/// This "checks" function is a string comparison function to ensure that the ciphertext hasn't been 
-/// tampered with and that the key material is correct. Supply the function with two hashes 
+/// This "checks" function is a string comparison function to ensure that the ciphertext hasn't been
+/// tampered with and that the key material is correct. Supply the function with two hashes
 /// generated from the ciphertext_hash function.
 #[allow(unused)]
 pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
@@ -33,14 +33,14 @@ pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
       return true
     } else {
       println!("{{\n  \"ERROR\": \"Ciphertext and/or password are not as expected. \
-        The supplied password was wrong, the enchantress.toml was wrong, or the file was tampered with.\",");
+        The supplied password or key material was wrong, the enchantress.toml was wrong, or the file was tampered with.\",");
       println!("  \"Found hash\": \"{}\",", validate);
       println!("  \"Expected hash\": \"{}\",", ciphertext_hash);
       return false
     };
 }
 
-/// Generate key material with two rounds of Argon2id. 
+/// Generate key material with two rounds of Argon2id.
 /// The first round is based on the password and supplied salt.
 /// The second round is the output of the first round and the "ENCHA" salt.
 #[allow(unused)]
