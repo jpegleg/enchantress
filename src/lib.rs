@@ -1,6 +1,6 @@
 mod crypt_aes;
 mod crypt_aead;
-/// Expose the modules for use as a library.
+
 pub use crypt_aes::*;
 pub use crypt_aead::*;
 
@@ -88,7 +88,6 @@ mod tests {
       let _ = key.zeroize();
       assert_ne!(validate_str, checkme);
     }
-
 
     #[test]
     fn crypttest2() {
