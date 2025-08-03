@@ -249,12 +249,12 @@ key_material = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2hoOjVfUyA0
 
 This key material can be treated as either secret or non-secret, as some form of password is still required. It must be UTF-8 and contain no double-quotes.
 
-If we want to use the key_material data is the true secret, we could set the "ENC" environment variable to a weaker password and rely on the secrecy of the data on the disk in the `km.toml` file instead.
+If we want to use the key_material data as the true secret, we could set the "ENC" environment variable to a weaker password and rely on the secrecy of the data on the disk in the `km.toml` file instead.
 
 While in most cases just the interactive password is sufficient, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
 In such a case use the `km.toml` and set the environment variable to another value. 
 
-When using the `km.toml`, if only the password leaks then the adversary doesn't have the real key, and if only the `km.toml` leaks then they don't have the real key either - both are required.
+When using the `km.toml`, if only the password or environment variable leaks then the adversary doesn't have the real key, and if only the `km.toml` leaks then they don't have the real key either - both are required.
 
 ## Using enchantress as a library
 
