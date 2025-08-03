@@ -238,7 +238,7 @@ Fun fact: emojis can be used in passwords in most cases and can create very stro
 
 ## The km.toml file
 
-The optional key material file `km.toml` is used do double the rounds of Argon2id and mix in another input to the key material.
+The optional key material file `km.toml` is used to double the rounds of Argon2id and mix in another input to the key material.
 If a km.toml is used for encryption, that same km.toml will be required for decryption.
 
 The file is constructed as a single key value pair:
