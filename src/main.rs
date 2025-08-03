@@ -115,7 +115,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
 
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
@@ -127,7 +127,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut key3 = crypt_aes::a2(password, &kmbytes);
             let mut key = crypt_aes::a2(&key3, MAGIC);
-              
+
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
             in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
@@ -199,7 +199,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
 
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
@@ -275,7 +275,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-ee" => {
-            let password = env::var("ENC").expect("ENC env var not set");
+            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
 
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
@@ -342,7 +342,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
             let mut kcontents = String::new();
@@ -422,7 +422,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
             let mut kcontents = String::new();
@@ -494,7 +494,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gee" => {
-            let password = env::var("ENC").expect("ENC env var not set");
+            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
             let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
             let mut kcontents = String::new();
@@ -567,7 +567,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
 
             let mut key = crypt_aes::a2(password, MAGIC);
@@ -628,7 +628,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
@@ -680,7 +680,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-ee" => {
-            let password = env::var("ENC").expect("ENC env var not set");
+            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
@@ -724,7 +724,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
@@ -784,7 +784,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").expect("ENC env var not set");
+            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
             let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
@@ -836,7 +836,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gee" => {
-            let password = env::var("ENC").expect("ENC env var not set");
+            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aead::aead_encrypt_file(input_file, output_file, &key)?;
