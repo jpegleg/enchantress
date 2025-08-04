@@ -9,7 +9,7 @@ Regardless of CTR or GCM mode, there is also an integrity checking mechanism wit
 The integrity checking mechanism with SHA3 uses an XOF (expandable output function) with the ciphertext and password, to create a "validation_string", also referred to as the "ciphertext_hash",
 that the tool uses to ensure that the ciphertext has not been tampered with and that the password is correct.
 
-Key material can optionally be supplied from a `file_password.toml` file instead of an interactive password or environment variable.
+The password can optionally be supplied from a `file_password.toml` file instead of an interactive password or environment variable.
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
@@ -118,8 +118,9 @@ mode = "CTR"
 
 The `ciphertext_hash` is not a secret itself and can be safely shared.
 
-The only line actually required for decryption is the ciphertext_hash. The mode line is a default and it
-is checked, but is an optional value. The ciphertext_path and creation_time items are for human/metadata use.
+The only line actually required for decryption is the ciphertext_hash. The mode line is recommended and a default, mode
+is checked, but is an optional value. If no mode is set in the enchantress.toml during decryption, enchantress will attempt
+to decrypt in whichever mode is set in the options. The ciphertext_path and creation_time items are for human/metadata use.
 An enchantress.toml can be created/recreated manually. The "validation string" that the encryption outputs
 is ciphertext_hash, and can be stored separately or shared, etc etc.
 
@@ -198,7 +199,7 @@ Enter password:
 When we decrypt files, we can either print to STDOUT or decrypt to a file. If the data is binary, then printing to STDOUT is not very useful and likely you should decrypt to a file.
 If the data is text that needs to stay protected, they decrypting to STDOUT is useful as to not expose the plaintext to the disk and need to remove it again.
 
-There are also options for using the environment variable "ENC". This is generally less secure, but provides a way for automation to utilize enchantress.
+There are also options for using the environment variable "ENC" or `file_password.toml`. These are generally less secure, but provide ways for automation to utilize enchantress.
 We can set a password as an environment variable so that systems that need to automatically encrypt can do so without an interactive prompt or exposed key file on the disk.
 
 ```
@@ -222,6 +223,8 @@ If we want to clear out the environment variable (in BASH), we can 'unset' it:
 unset ENC
 ```
 
+If we prefer to expose on the disk, then we can set the password in a file `./file_password.toml`.
+
 Fun fact: emojis can be used in passwords in most cases and can create very strong passwords in some cases.
 
 
@@ -239,11 +242,13 @@ enchantress_password = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2ho
 While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
 In such a case use the `file_password.toml` to store the key material on disk. Don't use double quotes in the value of enchantress_password.
 
-When the `file_password.toml` is in place, the options for environment variables are not available.
+When the `file_password.toml` is in place, the options for environment variables are not available and the prompt for a password is skipped..
 
 ## Using enchantress as a library
 
 While enchantress is a tool, the functions are also exposed as a library as of v0.1.4.
+
+While the enchantress tool works hard to provide security, the functions from the library by themeselves to not protect you from bad choices in function usage.
 
 As of v0.1.6, GCM mode functions are in the library as well. These functions have the same name but with `aead_` in front, so `encrypt_file` is the CTR version and `aead_encrypt_file` is the GCM version.
 
