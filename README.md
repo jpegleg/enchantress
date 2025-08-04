@@ -9,7 +9,7 @@ Regardless of CTR or GCM mode, there is also an integrity checking mechanism wit
 The integrity checking mechanism with SHA3 uses an XOF (expandable output function) with the ciphertext and password, to create a "validation_string", also referred to as the "ciphertext_hash",
 that the tool uses to ensure that the ciphertext has not been tampered with and that the password is correct.
 
-Additional material can optionally be added from a file, which also doubles the rounds of Argon2id from 2 to 4.
+Key material can optionally be supplied from a `km.toml` file instead of an interactive password or environment variable.
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
@@ -19,17 +19,6 @@ The key is generated based on a password processed in Argon2:
 Argon2 round 1: supplied password + fixed1 ->
   Argon2 round2: result of round 1 + fixed2 ->
     actual key material
-
-```
-
-If the `km.toml` is used, then we double the rounds of Argon2 and use the material from the `key_material` set in `km.toml` in addition.
-
-```
-Argon2 round 1: supplied password + key_material ->
-  Argon2 round2: result of round 1 + fixed2 ->
-    Argon2 round3: result of round 2 + fixed1 ->
-      Argon2 round4: result of round 3 + fixed2 ->
-        actual key material
 
 ```
 
@@ -50,7 +39,7 @@ As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the opt
 
 As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml which is checked during decryption to ensure that the decryption mode matches the encryption mode.
 
-As if v0.1.8: There is an option `km.toml` file that if present in pwd will double the Argon2id rounds (from 2 to 4), using the config value from `key_material` as a 4th input to the key material generation.
+As if v0.1.8: There is an option `km.toml` file that if present in pwd will replace password input, using the config value from `key_material` as the password input.
 
 ## Installing
 
@@ -238,7 +227,7 @@ Fun fact: emojis can be used in passwords in most cases and can create very stro
 
 ## The km.toml file
 
-The optional key material file `km.toml` is used to double the rounds of Argon2id and mix in another input to the key material.
+The optional key material file `km.toml` can be used instead of a password or environment variable.
 If a km.toml is used for encryption, that same km.toml will be required for decryption.
 
 The file is constructed as a single key value pair:
@@ -247,14 +236,10 @@ The file is constructed as a single key value pair:
 key_material = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2hoOjVfUyA0VnFRKXBkWnhNUG82Q0MrO3lFUzNMT3opa1hJV3JsNG1GOEo6ZyUpYkU4UEhUMWh0Cg"
 ```
 
-This key material can be treated as either secret or non-secret, as some form of password is still required. It must be UTF-8 and contain no double-quotes.
+While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
+In such a case use the `km.toml` to store the key material on disk.
 
-If we want to use the key_material data as the true secret, we could set the "ENC" environment variable to a weaker password and rely on the secrecy of the data on the disk in the `km.toml` file instead.
-
-While in most cases just the interactive password is sufficient, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
-In such a case use the `km.toml` and set the environment variable to another value. 
-
-When using the `km.toml`, if only the password or environment variable leaks then the adversary doesn't have the real key, and if only the `km.toml` leaks then they don't have the real key either - both are required.
+When the `km.toml` is in place, the options for environment variables are not available.
 
 ## Using enchantress as a library
 
