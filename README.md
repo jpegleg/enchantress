@@ -300,7 +300,7 @@ The main difference from that example and the actual code in enchantress, other 
 
 This example shows the full combination of key material generation, encryption, and validation string generation.
 
-Then when we go to decrypt, enchantress handles it like this. Agaain, the error handling and module naming is different than code used in the enchantress tool.
+Then when we go to decrypt, enchantress handles it like this. Again, the error handling and module naming is different than code used in the enchantress tool.
 The error handling and JSON format is removed in this example to improve clarity. Check out the source code for enchantress to see more on that subject.
 
 ```
