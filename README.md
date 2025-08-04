@@ -39,7 +39,7 @@ As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the opt
 
 As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml which is checked during decryption to ensure that the decryption mode matches the encryption mode.
 
-As if v0.1.8: There is an option `file_password.toml` file that if present in pwd will replace password input, using the config value from `enchantress_password` as the password input.
+As if v0.1.8: There is an option `file_password.toml` file that if present in pwd will replace password input, using the config value from `enchantress_password` as the password input to the key material generation.
 
 ## Installing
 
@@ -78,7 +78,7 @@ The third mode is if a file_password.toml is in the working directory of process
 This project will never use AI-slop. All code is reviewed, tested, implemented by a human that is academically trained in cryptography and information security.
 This repository and the crates.io repository is carefully managed and protected.
 
-This project will never break backwards compatibility with decryption.
+This project will never break backwards compatibility with released versions.
 
 This project will be maintained as best as is reasonable.
 
@@ -118,7 +118,8 @@ mode = "CTR"
 
 The `ciphertext_hash` is not a secret itself and can be safely shared.
 
-The only line actually required for decryption is the ciphertext_hash, the other lines are for human use.
+The only line actually required for decryption is the ciphertext_hash. The mode line is a default and it
+is checked, but is an optional value. The ciphertext_path and creation_time items are for human/metadata use.
 An enchantress.toml can be created/recreated manually. The "validation string" that the encryption outputs
 is ciphertext_hash, and can be stored separately or shared, etc etc.
 
@@ -236,7 +237,7 @@ enchantress_password = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2ho
 ```
 
 While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
-In such a case use the `file_password.toml` to store the key material on disk.
+In such a case use the `file_password.toml` to store the key material on disk. Don't use double quotes in the value of enchantress_password.
 
 When the `file_password.toml` is in place, the options for environment variables are not available.
 
