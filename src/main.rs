@@ -51,10 +51,10 @@ struct Config {
     mode: Option<String>,
 }
 
-/// The Keyfile struct is optionally used, parsed from km.toml.
+/// The Keyfile struct is optionally used, parsed from file_password.toml.
 #[derive(Deserialize)]
 struct Keyfile {
-    key_material: String,
+    enchantress_password: String,
 }
 
 /// Write a config file each time we encrypt to enchantress.toml.
@@ -100,7 +100,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let output_file = &args[2];
     let flag = &args[3];
 
-    if Path::new("./km.toml").exists() {
+    if Path::new("./file_password.toml").exists() {
 
       match flag.as_str() {
         "-do" => {
@@ -115,11 +115,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("failed to set key material bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -151,11 +151,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("Failed to read key material into bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -177,11 +177,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-e" => {
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("failed to set key material bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -209,11 +209,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("failed to set key material bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -244,11 +244,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("failed to set key material bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -269,11 +269,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-ge" => {
-            let mut km = File::open("./km.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file km.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read km.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse km.toml")))?;
-            let kmstring = Some(kmc.key_material);
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            let kmstring = Some(kmc.enchantress_password);
             let kmbytes = kmstring.expect("failed to set key material bytes").into_bytes();
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
@@ -289,8 +289,32 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let _ = write_config(output_file, &validate_str, &mode);
             key.zeroize();
         },
+        "-gee" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
+        "-ee" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
+        "-deo" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
+        "-gdeo" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
+        "-de" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
+        "-gde" => {
+            eprintln!("{{ \"ERROR\": \"Environment variable options are not availble if a file_password.toml is in use and a file_password.toml has been found.\"}} ");
+            process::exit(1);
+        },
         _ => {
-            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Environment variable options are not availble if a km.toml is in use. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. Add g to use GCM mode, for example -ge. Use -v to print the version of enchantress.\"}} ");
+            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Environment variable options are not availble if a file_password.toml is in use. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. Add g to use GCM mode, for example -ge. Use -v to print the version of enchantress.\"}} ");
             process::exit(1);
         }
       }
@@ -612,7 +636,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             key.zeroize();
         },
         _ => {
-            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Environment variable options are not available if a km.toml is in use. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. Add g to use GCM mode, for example -ge. Use -v to print the version of enchantress.\"}} ");
+            eprintln!("{{ \"ERROR\": \"Invalid flag. Use -d for decryption or -e for encryption of a file using a supplied password. Use -ee to encrypt with an environment variable ENC, and -de to decrypt with an environment variable. Environment variable options are not available if a file_password.toml is in use. Use -do to decrypt to STDOUT, and -deo to use an environment variable and decrypt to STDOUT. Add g to use GCM mode, for example -ge. Use -v to print the version of enchantress.\"}} ");
             process::exit(1);
         }
       }
