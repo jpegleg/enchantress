@@ -9,7 +9,7 @@ Regardless of CTR or GCM mode, there is also an integrity checking mechanism wit
 The integrity checking mechanism with SHA3 uses an XOF (expandable output function) with the ciphertext and password, to create a "validation_string", also referred to as the "ciphertext_hash",
 that the tool uses to ensure that the ciphertext has not been tampered with and that the password is correct.
 
-Key material can optionally be supplied from a `km.toml` file instead of an interactive password or environment variable.
+Key material can optionally be supplied from a `file_password.toml` file instead of an interactive password or environment variable.
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
@@ -39,7 +39,7 @@ As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the opt
 
 As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml which is checked during decryption to ensure that the decryption mode matches the encryption mode.
 
-As if v0.1.8: There is an option `km.toml` file that if present in pwd will replace password input, using the config value from `key_material` as the password input.
+As if v0.1.8: There is an option `file_password.toml` file that if present in pwd will replace password input, using the config value from `enchantress_password` as the password input.
 
 ## Installing
 
@@ -61,7 +61,7 @@ Or installed from a release binary.
 
 ## Command options
 
-There are two different cipher modes, four key input modes, and two types of decryption modes.
+There are two different cipher modes, three key input modes, and two types of decryption modes.
 
 ```
 The first mode is with a supplied password interactively supplied in the terminal: -e and -d (-ge and -gd for GCM)
@@ -69,8 +69,7 @@ The second mode is with a password set as the environment variable "ENC": -ee an
 The two types of decryption are:
   decryption to a file: -d and -de (-gd and -gde for GCM)
   decryption to STDOUT: -do and -deo (-gdo and -gdeo for GCM)
-The third mode is with a supplied password and key material read from a km.toml file: -e and -d (-ge and -gd for GCM) + ./km.toml
-The fourth mode is with a password set as the environment variable "ENC": -ee and -de (-gee and -gde for GCM) + ./km.toml
+The third mode is if a file_password.toml is in the working directory of process execution, the enchantress_password value is used instead.
 
 ```
 
@@ -225,21 +224,21 @@ unset ENC
 Fun fact: emojis can be used in passwords in most cases and can create very strong passwords in some cases.
 
 
-## The km.toml file
+## The file_password.toml file
 
-The optional key material file `km.toml` can be used instead of a password or environment variable.
-If a km.toml is used for encryption, that same km.toml will be required for decryption.
+The optional key material file `file_password.toml` can be used instead of a password or environment variable.
+If a file_password.toml is used for encryption, that same file_password.toml will be required for decryption.
 
 The file is constructed as a single key value pair:
 
 ```
-key_material = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2hoOjVfUyA0VnFRKXBkWnhNUG82Q0MrO3lFUzNMT3opa1hJV3JsNG1GOEo6ZyUpYkU4UEhUMWh0Cg"
+enchantress_password = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2hoOjVfUyA0VnFRKXBkWnhNUG82Q0MrO3lFUzNMT3opa1hJV3JsNG1GOEo6ZyUpYkU4UEhUMWh0Cg"
 ```
 
 While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
-In such a case use the `km.toml` to store the key material on disk.
+In such a case use the `file_password.toml` to store the key material on disk.
 
-When the `km.toml` is in place, the options for environment variables are not available.
+When the `file_password.toml` is in place, the options for environment variables are not available.
 
 ## Using enchantress as a library
 
@@ -326,5 +325,3 @@ The enchantress tool reads the `enchantress.toml` to find the ciphertext_hash (t
 set another way, but the implementation should be carefully enforced if the integrity checking matters. Of course other layers like HMAC and GMAC (GCM) can be implemented in addition or instead.
 
 Enchantress uses [zeroize](https://docs.rs/zeroize/latest/zeroize/) to explicitly empty the key from memory. This technique is generally recommended to avoid the edge case where the compiler optimizes away an important aspect of "zeroizing" a value.
-
-
