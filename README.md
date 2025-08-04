@@ -232,8 +232,8 @@ Fun fact: emojis can be used in passwords in most cases and can create very stro
 
 ## The file_password.toml file
 
-The optional key material file `file_password.toml` can be used instead of a password or environment variable.
-If a file_password.toml is used for encryption, that same file_password.toml will be required for decryption.
+The optional password file `file_password.toml` can be used instead of an interactive password or environment variable.
+If a file_password.toml is used for encryption, that same password from the file_password.toml will be required for decryption.
 
 The file is constructed as a single key value pair:
 
@@ -241,10 +241,10 @@ The file is constructed as a single key value pair:
 enchantress_password = "OSs0cyY6LGQweTNmXDR3YyQ7aDc8NW9RfEQ6ajBlYCp3UTdVUyEsc2hoOjVfUyA0VnFRKXBkWnhNUG82Q0MrO3lFUzNMT3opa1hJV3JsNG1GOEo6ZyUpYkU4UEhUMWh0Cg"
 ```
 
-While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable and interactive password are not good options.
+While in most cases just the interactive password is sufficient and more secure, there are cases where enchantress is needed in automation and the environment variable or the interactive password methods are not good options.
 In such a case use the `file_password.toml` to store the key material on disk. Don't use double quotes in the value of enchantress_password.
 
-When the `file_password.toml` is in place, the options for environment variables are not available and the prompt for a password is skipped..
+When the `file_password.toml` is in place, the options for environment variables are not available and the prompt for a password is skipped.
 
 ## Using enchantress as a library
 
