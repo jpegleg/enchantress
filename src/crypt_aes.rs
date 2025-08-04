@@ -33,7 +33,7 @@ pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
       return true
     } else {
       println!("{{\n  \"ERROR\": \"Ciphertext and/or password are not as expected. \
-        The supplied password or key material was wrong, the enchantress.toml was wrong, or the file was tampered with.\",");
+        The supplied password, the enchantress.toml was wrong, or the file was tampered with.\",");
       println!("  \"Found hash\": \"{}\",", validate);
       println!("  \"Expected hash\": \"{}\",", ciphertext_hash);
       return false
