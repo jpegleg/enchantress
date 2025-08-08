@@ -13,7 +13,7 @@ The password can optionally be supplied from a `file_password.toml` file instead
 
 Encryptions are are recorded in an `enchantress.toml` which is needed for decryption with enchantress.
 
-The key is generated based on a password processed in Argon2:
+The key is generated based on a password processed in Argon2id:
 
 ```
 Argon2 round 1: supplied password + fixed1 ->
@@ -42,6 +42,8 @@ As of v0.1.6: Enchantress supports GCM mode operations with "g" added to the opt
 As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml which is checked during decryption to ensure that the decryption mode matches the encryption mode.
 
 As if v0.1.8: There is an option `file_password.toml` file that if present in pwd will replace password input, using the config value from `enchantress_password` as the password input to the key material generation.
+
+See https://github.com/jpegleg/enchanter for XChaCha20Poly1305 file encryption - otherwise the tool is the same.
 
 ## Installing
 
@@ -132,7 +134,7 @@ Weak passwords are weak security. Enchantress does not enforce "good" passwords,
 
 ## Usage patterns
 
-Becaue there can only be one `enchantress.toml` in the working directory, when working with multiple files we might either change directories or move the enchantress.toml files that are created to other names.
+Because there can only be one `enchantress.toml` in the working directory, when working with multiple files we might either change directories or move the enchantress.toml files that are created to other names.
 
 GCM mode (options starting with -g) have increase security measures but requires more system resources and is slower than pure CTR mode. If encrypted with GCM mode, the decryptin needs to use the corresponding GCM mode decryption.
 
