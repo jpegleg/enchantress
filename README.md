@@ -43,7 +43,7 @@ As of v0.1.7: Enchantress adds an optional "mode" value to the enchantress.toml 
 
 As if v0.1.8: There is an option `file_password.toml` file that if present in pwd will replace password input, using the config value from `enchantress_password` as the password input to the key material generation.
 
-See https://github.com/jpegleg/enchanter for XChaCha20Poly1305 file encryption with a similar tool.
+See [enchanter](https://crates.io/crates/enchanter) for XChaCha20Poly1305 file encryption with a similar tool.
 
 ## Installing
 
