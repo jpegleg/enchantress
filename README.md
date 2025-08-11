@@ -331,6 +331,14 @@ The error handling and JSON format is removed in this example to improve clarity
 In both of these examples we use `eprint!` macro to print to STDERR for the password prompts. This is useful for when the tool STDOUT is used to write to another file or log so that
 the password prompt isn't added to the output file/s.
 
+## giant-spellbook tool
+
+There is another tool named [giant-spellbook](https://github.com/jpegleg/giant-spellbook) that is compatible with enchantress because it imports enchantress as a library.
+The encryption and decryption operations can be done with giant-spellbook as well, without any TOML config file.
+
+If you prefer not to have an enchantress.toml, then giant-spellbook is the tool for you.
+
+
 The enchantress tool reads the `enchantress.toml` to find the ciphertext_hash (the string created from the encryption, the "Validation string" from the example). That value could be
 set another way, but the implementation should be carefully enforced if the integrity checking matters. Of course other layers like HMAC and GMAC (GCM) can be implemented in addition or instead.
 
