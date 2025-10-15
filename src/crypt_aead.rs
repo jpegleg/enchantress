@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 
 /// Encrypt a file with AES-256 in GCM mode.
+#[allow(deprecated)]
 #[allow(unused)]
 pub fn aead_encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(&input_file)?;
@@ -24,6 +25,7 @@ pub fn aead_encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Res
 }
 
 /// Decrypt a file with AES-256 in GCM mode.
+#[allow(deprecated)]
 #[allow(unused)]
 pub fn aead_decrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
@@ -46,6 +48,7 @@ pub fn aead_decrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Res
 /// Decrypt a file to STDOUT with AES-256 in GCM mode.
 /// The output is any UTF-8 data. If the data is non-UTF-8,
 /// decrypt to a file instead with the aead_decrypt_file function.
+#[allow(deprecated)]
 #[allow(unused)]
 pub fn aead_decrypt_stdout(input_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
     let mut file = File::open(input_file)?;
