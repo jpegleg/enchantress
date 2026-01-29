@@ -70,10 +70,10 @@ mode = "{}"
         );
     let json_started = false;
     let mut file = try_print_json!(
-        File::create("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {}", e))),
+        File::create("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {}", e))),
         json_started
     );
-    let _ = try_print_json!(
+    try_print_json!(
         file.write_all(config_content.as_bytes()),
         json_started
     );
@@ -104,10 +104,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
       match flag.as_str() {
         "-do" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -gdo instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -115,10 +115,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -129,14 +129,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             };
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -145,10 +145,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-d" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"use -gd instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -156,10 +156,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -171,14 +171,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -188,10 +188,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-e" => {
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -204,21 +204,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "CTR";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         "-gdo" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -do instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -226,10 +226,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -241,14 +241,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -256,10 +256,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gd" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -d instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -267,10 +267,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -282,14 +282,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -298,10 +298,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-ge" => {
-            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the key material file file_password.toml: {e}")))?;
+            let mut km = File::open("./file_password.toml").map_err(|e| io::Error::other(format!("Failed to open the key material file file_password.toml: {e}")))?;
             let mut kcontents = String::new();
-            km.read_to_string(&mut kcontents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read file_password.toml: {e}")))?;
-            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse file_password.toml")))?;
+            km.read_to_string(&mut kcontents).map_err(|e| io::Error::other(format!("Failed to read file_password.toml: {e}")))?;
+            let kmc: Keyfile = toml::from_str(&kcontents).map_err(|_| io::Error::other(format!("Failed to parse file_password.toml")))?;
             let kmstring = Some(kmc.enchantress_password);
             let kmbytes = match kmstring {
               Some(s) => s.into_bytes(),
@@ -314,14 +314,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut key = crypt_aes::a2(&kmbytes, MAGIC);
 
             crypt_aead::aead_encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "GCM";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         "-gee" => {
@@ -358,10 +358,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
       match flag.as_str() {
         "-deo" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -gdeo instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -369,18 +369,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let strpassword = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
 
             let mut key = crypt_aes::a2(password, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e|io::Error::new(io::ErrorKind::Other, format!("Decryption failed for {input_file}: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e|io::Error::other(format!("Decryption failed for {input_file}: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -388,10 +388,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-do" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -gdo instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -404,14 +404,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_stdout(input_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -419,10 +419,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-de" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -gde instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -430,17 +430,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 16];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let strpassword = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -449,10 +449,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-d" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("GCM".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"use -gd instead because GCM was found as mode in enchantress.toml\"\n}}");
@@ -466,14 +466,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aes::decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -482,18 +482,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-ee" => {
-            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let password = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "CTR";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         "-e" => {
@@ -504,21 +504,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aes::encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "CTR";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         "-gdeo" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -deo instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -526,17 +526,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let strpassword = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -544,10 +544,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gdo" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -do instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -560,14 +560,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_stdout(input_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
             };
@@ -575,10 +575,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gde" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -de instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -586,17 +586,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let mut file = File::open(input_file)?;
             let mut nonce = [0u8; 12];
             file.read_exact(&mut nonce)?;
-            let strpassword = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let strpassword = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let password = strpassword.as_bytes();
             let mut key = crypt_aes::a2(password, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -605,10 +605,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gd" => {
-          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open enchantress.toml: {e}")))?;
+          let mut file = File::open("./enchantress.toml").map_err(|e| io::Error::other(format!("Failed to open enchantress.toml: {e}")))?;
           let mut contents = String::new();
-          file.read_to_string(&mut contents).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read enchantress.toml: {e}")))?;
-          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Failed to parse enchantress.toml")))?;
+          file.read_to_string(&mut contents).map_err(|e| io::Error::other(format!("Failed to read enchantress.toml: {e}")))?;
+          let config: Config = toml::from_str(&contents).map_err(|_| io::Error::other(format!("Failed to parse enchantress.toml")))?;
 
           if config.mode == Some("CTR".to_string()) {
             eprintln!("{{\n  \"ERROR\": \"Use -d instead because CTR was found as mode in enchantress.toml\"\n}}");
@@ -622,14 +622,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let password = read_password()?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
-            let mut in_file = File::open(input_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the input file {input_file}: {e}")))?;
+            let mut in_file = File::open(input_file).map_err(|e| io::Error::other(format!("Failed to open the input file {input_file}: {e}")))?;
             let mut input_file_data = Vec::new();
-            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {input_file}: {e}")))?;
+            in_file.read_to_end(&mut input_file_data).map_err(|e| io::Error::other(format!("Failed to read {input_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &input_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             let checkme = &validate_str;
-            if crypt_aes::checks(checkme, &config.ciphertext_hash) == true {
-              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Decryption failed: {e}")))?;
+            if crypt_aes::checks(checkme, &config.ciphertext_hash) {
+              crypt_aead::aead_decrypt_file(input_file, output_file, &key).map_err(|e| io::Error::other(format!("Decryption failed: {e}")))?;
               println!("{{\"Result\": \"file decrypted\"}}");
             } else {
               println!("  \"Result\": \"Refusing to decrypt.\"\n}}");
@@ -638,18 +638,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
           }
         },
         "-gee" => {
-            let password = env::var("ENC").map_err(|_| io::Error::new(io::ErrorKind::Other, format!("Environment variable ENC not set")))?;
+            let password = env::var("ENC").map_err(|_| io::Error::other(format!("Environment variable ENC not set")))?;
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aead::aead_encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "GCM";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         "-ge" => {
@@ -660,14 +660,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let bpassword = password.as_bytes();
             let mut key = crypt_aes::a2(bpassword, MAGIC);
             crypt_aead::aead_encrypt_file(input_file, output_file, &key)?;
-            let mut out_file = File::open(output_file).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to open the output file {output_file}: {e}")))?;
+            let mut out_file = File::open(output_file).map_err(|e| io::Error::other(format!("Failed to open the output file {output_file}: {e}")))?;
             let mut output_file_data = Vec::new();
-            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Failed to read {output_file}: {e}")))?;
+            out_file.read_to_end(&mut output_file_data).map_err(|e| io::Error::other(format!("Failed to read {output_file}: {e}")))?;
             let validate = crypt_aes::ciphertext_hash(&key, &output_file_data, 64);
             let validate_str = BASE64_STANDARD.encode(&validate);
             println!("{{\"Validation string\": \"{validate_str}\"}}");
             let mode = "GCM";
-            let _ = write_config(output_file, &validate_str, &mode);
+            let _ = write_config(output_file, &validate_str, mode);
             key.zeroize();
         },
         _ => {
