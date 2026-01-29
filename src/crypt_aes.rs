@@ -29,7 +29,7 @@ const ENCHA: &[u8] = b"789c33a8303132733337373335732d353301001df903be";
 #[allow(unused)]
 pub fn checks(validate: &str, ciphertext_hash: &str) -> bool {
     let result = validate == ciphertext_hash;
-    if result == true {
+    if result {
       return true
     } else {
       println!("{{\n  \"ERROR\": \"Ciphertext and/or password are not as expected. \
@@ -129,7 +129,7 @@ pub fn decrypt_stdout(input_file: &str, key: &[u8]) -> Result<(), Box<dyn std::e
     let mut cipher = Aes256Ctr::new(key.into(), &nonce.into());
     cipher.apply_keystream(&mut data);
 
-    println!("{}", String::from_utf8_lossy(&data).to_string());
+    println!("{}", String::from_utf8_lossy(&data));
 
     Ok(())
 }
