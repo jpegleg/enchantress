@@ -10,7 +10,7 @@ use std::io::{Read, Write};
 #[allow(deprecated)]
 #[allow(unused)]
 pub fn aead_encrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Result<(), Box<dyn std::error::Error>> {
-    let mut file = File::open(&input_file)?;
+    let mut file = File::open(input_file)?;
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
     let xkey = Key::<Aes256Gcm>::from_slice(key);
@@ -36,7 +36,7 @@ pub fn aead_decrypt_file(input_file: &str, output_file: &str, key: &[u8]) -> Res
     file.read_to_end(&mut data)?;
     let xkey = Key::<Aes256Gcm>::from_slice(key);
     let cipher = Aes256Gcm::new(xkey);
-    cipher.decrypt(&nonce, &*data);
+    cipher.decrypt(nonce, &*data);
 
     let mut output = File::create(output_file)?;
     output.write_all(&data)?;
@@ -60,9 +60,9 @@ pub fn aead_decrypt_stdout(input_file: &str, key: &[u8]) -> Result<(), Box<dyn s
 
     let xkey = Key::<Aes256Gcm>::from_slice(key);
     let cipher = Aes256Gcm::new(xkey);
-    cipher.decrypt(&nonce, &*data);
+    cipher.decrypt(nonce, &*data);
 
-    println!("{}", String::from_utf8_lossy(&data).to_string());
+    println!("{}", String::from_utf8_lossy(&data));
 
     Ok(())
 }
