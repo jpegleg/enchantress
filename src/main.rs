@@ -90,7 +90,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     }
     let input_file = &args[1];
     if input_file == "-v" {
-      println!("{{\"Version\": \"0.1.10\"}}");
+      println!("{{\"Version\": \"0.1.11\"}}");
       process::exit(0);
     }
     if args.len() != 4 {
